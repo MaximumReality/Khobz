@@ -5,38 +5,36 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>The Bureaucracy Heist</title>
+    <title>Maximum Reality: The Bureaucracy Heist</title>
     <style>
-        :root { --neon: #00f3ff; --danger: #ff0055; --matrix: #00ff41; }
-        body { margin: 0; padding: 0; background: #000; overflow: hidden; height: 100dvh; font-family: 'Courier New', monospace; }
-        
+        :root { --neon: #00f3ff; --danger: #ff0055; --matrix: #00ff41; --gold: #ffcf00; }
+        body { margin: 0; padding: 0; background: #000; overflow: hidden; height: 100dvh; font-family: 'Courier New', monospace; color: white; }
         canvas { display: block; width: 100vw; height: 100dvh; touch-action: none; }
 
         #ui, .overlay, #game-controls { position: absolute; width: 100%; box-sizing: border-box; z-index: 10; pointer-events: none; }
-        #ui { top: 40px; left: 0; display: flex; justify-content: space-between; padding: 0 20px; }
+        #ui { top: 45px; left: 0; display: flex; justify-content: space-between; padding: 0 20px; }
         .stat { color: var(--neon); font-weight: bold; font-size: 18px; text-shadow: 0 0 5px #000; }
         
-        /* Power-Up Timer Bar */
         #azul-timer-container {
-            position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
-            width: 200px; height: 6px; background: rgba(255,255,255,0.1);
-            border-radius: 3px; visibility: hidden; pointer-events: none;
+            position: absolute; top: 85px; left: 50%; transform: translateX(-50%);
+            width: 180px; height: 6px; background: rgba(255,255,255,0.1);
+            border-radius: 3px; visibility: hidden;
         }
-        #azul-timer-fill { height: 100%; width: 100%; background: var(--matrix); box-shadow: 0 0 10px var(--matrix); }
+        #azul-timer-fill { height: 100%; width: 100%; background: var(--matrix); box-shadow: 0 0 10px var(--matrix); transition: width 0.1s linear; }
 
-        #game-controls { bottom: 30px; right: 20px; display: flex; gap: 10px; width: auto; pointer-events: auto; }
+        #game-controls { bottom: 30px; left: 20px; right: 20px; display: flex; justify-content: space-between; pointer-events: auto; }
+        .btn-group { display: flex; gap: 10px; }
         .ctrl-btn { background: rgba(0,0,0,0.8); border: 1px solid var(--neon); color: var(--neon); padding: 12px; border-radius: 8px; font-size: 20px; }
 
         .overlay { 
             top: 0; left: 0; height: 100%; background: rgba(0,0,0,0.95); 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 20px; pointer-events: auto; z-index: 100;
+            text-align: center; padding: 25px; pointer-events: auto; z-index: 100;
         }
-        .start-btn { background: var(--neon); color: #000; border: none; padding: 15px 40px; font-weight: bold; font-size: 22px; border-radius: 5px; cursor: pointer; }
-        h1 { color: var(--neon); margin: 0; text-transform: uppercase; letter-spacing: 2px; }
-        .story { color: #ccc; max-width: 320px; line-height: 1.5; font-size: 14px; margin: 20px 0; }
-        .home-link { color: var(--neon); text-decoration: none; font-size: 12px; margin-top: 25px; opacity: 0.6; border-bottom: 1px solid transparent; }
-        .home-link:hover { border-bottom: 1px solid var(--neon); }
+        .start-btn { background: var(--neon); color: #000; border: none; padding: 18px 45px; font-weight: bold; font-size: 22px; border-radius: 5px; cursor: pointer; text-transform: uppercase; }
+        h1 { color: var(--neon); margin-bottom: 5px; font-size: 26px; letter-spacing: 2px; }
+        .story { color: #ccc; max-width: 320px; line-height: 1.5; font-size: 14px; margin: 15px 0; }
+        .home-link { color: var(--neon); text-decoration: none; font-size: 13px; margin-top: 25px; opacity: 0.7; border-bottom: 1px solid var(--neon); padding-bottom: 2px; }
     </style>
 </head>
 <body>
@@ -51,17 +49,20 @@
     </div>
 
     <div id="game-controls">
-        <button class="ctrl-btn" onclick="togglePause()" id="pause-btn">⏸️</button>
-        <button class="ctrl-btn" onclick="toggleMute()" id="mute-btn">🔊</button>
-        <button class="ctrl-btn" onclick="location.reload()">🔄</button>
+        <button class="ctrl-btn" onclick="window.location.href='https://maximumreality.xyz'">🏠</button>
+        <div class="btn-group">
+            <button class="ctrl-btn" onclick="togglePause()" id="pause-btn">⏸️</button>
+            <button class="ctrl-btn" onclick="location.reload()">🔄</button>
+        </div>
     </div>
 
     <div id="overlay" class="overlay">
         <h1>THE HEIST</h1>
         <p class="story">
             Lqliâa 2026. <br>
-            Woodlawn has verified the signal. The documents are "In Good Condition." <br><br>
-            Survive the 💊 noise. Find <b>Azul</b> to hack the mainframe.
+            The Woodlawn signal is green. <br><br>
+            Reach for <b>Stars ⭐</b> and <b>Forms 📧</b>. <br> Dodge the <b>Spam 💊</b>. <br>
+            Catch <b>Azul</b> to hack the flow.
         </p>
         <button class="start-btn" onclick="startGame()">INITIATE</button>
         <a href="https://maximumreality.xyz" class="home-link">RETURN TO HQ</a>
@@ -89,10 +90,10 @@
             ssa_form: new Audio('youve-got-mail.mp3'),
             khobz: new Audio('crunch.mp3'),
             azul_meow: new Audio('azul-hacker-meow.mp3'),
-            spam: new Audio('error.mp3')
+            spam: new Audio('error.mp3'),
+            michelin_star: new Audio('chime.mp3')
         };
 
-        // Optimized Particle System
         class Particle {
             constructor(x, y, color) {
                 this.x = x; this.y = y;
@@ -149,7 +150,9 @@
             const items = [
                 { l: "🥖", t: "khobz", v: 10, c: "#ffcf00" },
                 { l: "📧", t: "ssa_form", v: 50, c: "#00f3ff" },
-                { l: "💊", t: "spam", v: -50, c: "#ff0055" }
+                { l: "⭐", t: "michelin_star", v: 100, c: "#ffffff" },
+                { l: "💊", t: "spam", v: -50, c: "#ff0055" },
+                { l: "👻", t: "ghost", v: 0, c: "#888888" }
             ];
             let item = (Math.random() < 0.08) ? { l: "azul", t: "azul", v: 0, c: "#00ff41" } : items[Math.floor(Math.random() * items.length)];
             obstacles.push({
@@ -161,7 +164,6 @@
         }
 
         function update() {
-            // Difficulty Equation: $Difficulty = 1 + (t / 60)$
             gameState.difficulty = 1 + ((Date.now() - startTime) / 60000);
 
             if (gameState.powerUp) {
@@ -173,7 +175,7 @@
                 }
             }
 
-            particles.forEach((p, i) => { p.update(); if (p.alpha <= 0) particles.splice(i, 1); });
+            let reaching = false;
 
             obstacles.forEach((ob, i) => {
                 if (gameState.powerUp && ob.v > 0) {
@@ -182,6 +184,11 @@
                 } else { ob.y += ob.speed; }
 
                 let dist = Math.hypot(gameState.player.x - ob.x, (gameState.player.y - 40) - ob.y);
+                
+                // Visual Reach Trigger (Item is close)
+                if (dist < 150 && ob.v > 0) reaching = true;
+
+                // Collision
                 if (dist < 70) {
                     if (ob.t === 'azul') {
                         gameState.powerUp = true;
@@ -190,15 +197,29 @@
                         if (!gameState.isMuted) sounds.azul_meow.play();
                     } else {
                         gameState.score += ob.v;
-                        if (!gameState.isMuted && sounds[ob.t]) sounds[ob.t].play();
+                        if (!gameState.isMuted && sounds[ob.t]) {
+                            sounds[ob.t].currentTime = 0;
+                            sounds[ob.t].play();
+                        }
                     }
-                    // Burst Particles
-                    for(let j=0; j<12; j++) particles.push(new Particle(ob.x, ob.y, ob.c));
-                    
+                    for(let j=0; j<15; j++) particles.push(new Particle(ob.x, ob.y, ob.c));
                     obstacles.splice(i, 1);
                     scoreElement.innerText = gameState.score;
+                    if (gameState.score > gameState.highScore) {
+                        gameState.highScore = gameState.score;
+                        highScoreElement.innerText = gameState.highScore;
+                        localStorage.setItem('maxReality_highScore', gameState.highScore);
+                    }
                 }
             });
+
+            // Sprite Logic
+            if (reaching) gameState.currentSprite = 'reach';
+            else if (gameState.player.movingDirection === 'left') gameState.currentSprite = 'stand_west';
+            else if (gameState.player.movingDirection === 'right') gameState.currentSprite = 'stand_east';
+            else gameState.currentSprite = 'stand';
+
+            particles.forEach((p, i) => { p.update(); if (p.alpha <= 0) particles.splice(i, 1); });
             obstacles = obstacles.filter(ob => ob.y < canvas.height + 50);
         }
 
@@ -229,13 +250,15 @@
         }
 
         canvas.addEventListener('touchmove', (e) => {
-            gameState.player.x = e.touches[0].clientX;
-            gameState.currentSprite = (gameState.player.x < canvas.width/2) ? 'stand_west' : 'stand_east';
+            const newX = e.touches[0].clientX;
+            gameState.player.movingDirection = (newX < gameState.player.x) ? 'left' : 'right';
+            gameState.player.x = newX;
             e.preventDefault();
         }, { passive: false });
 
+        canvas.addEventListener('touchend', () => { gameState.player.movingDirection = null; });
+
         function togglePause() { gameState.isPaused = !gameState.isPaused; document.getElementById('pause-btn').innerText = gameState.isPaused ? '▶️' : '⏸️';}
-        function toggleMute() { gameState.isMuted = !gameState.isMuted; }
     </script>
 </body>
 </html>
