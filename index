@@ -115,6 +115,55 @@ function updateObstacles() {
             
             e.preventDefault(); // Prevents iPhone "swipe to go back"
         }, { passive: false });
+    // 1. Corrected lowercase pre-loading
+const sprites = {};
+const frameNames = ['arms_up', 'stand_west', 'idle', 'stand_east', 'reach', 'stand'];
+
+frameNames.forEach(name => {
+    sprites[name] = new Image();
+    sprites[name].src = `lori_${name}.png`; // All lowercase for the main branch
+});
+
+let currentSprite = 'stand'; // Key for the sprites object
+
+function updateGameLogic() {
+    let nearestItemDist = 999;
+    let isReaching = false;
+
+    // Check if any GOOD items are close enough to reach for
+    obstacles.forEach(ob => {
+        if (ob.type === 'khobz' || ob.type === 'boot') {
+            let dx = gameState.player.x - ob.x;
+            let dy = gameState.player.y - ob.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 100) isReaching = true; // 100px proximity
+        }
+    });
+
+    // Sprite Selection Priority
+    if (isReaching) {
+        currentSprite = 'reach';
+    } else if (gameState.movingLeft) {
+        currentSprite = 'stand_west';
+    } else if (gameState.movingRight) {
+        currentSprite = 'stand_east';
+    } else {
+        currentSprite = 'stand';
+    }
+}
+
+function drawPlayer() {
+    const img = sprites[currentSprite];
+    if (img && img.complete) {
+        ctx.drawImage(
+            img, 
+            gameState.player.x - 50, 
+            gameState.player.y - 75, 
+            100, 150
+        );
+    }
+}
+
 
         draw();
     </script>
