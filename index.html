@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Maximum Reality: The Bureaucracy Heist</title>
     <style>
         body { margin: 0; padding: 0; background-color: #0a0a0a; overflow: hidden; height: 100vh; font-family: 'Courier New', monospace; }
-        canvas { display: block; border-bottom: 2px solid #00f3ff; background-color: #111; touch-action: none; }
+        canvas {
+    width: 100vw;
+    height: 100dvh; /* Dynamic height adjusts when Safari bars expand/collapse */
+    display: block;
+    touch-action: none; /* Prevents the screen from bouncing while you play */
+}
+
         #ui { position: absolute; top: 10px; left: 10px; color: #00f3ff; pointer-events: none; text-shadow: 0 0 5px #00f3ff; }
     </style>
 </head>
@@ -22,9 +31,12 @@
 
         // 1. Setup & Sprites
         function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    // Re-anchor Lori to the bottom of the new visible area
+    gameState.player.y = canvas.height - 150; 
+}
+
         window.addEventListener('resize', resize);
         resize();
 
@@ -37,11 +49,9 @@
 
         // 2. Game State
         let gameState = {
-            player: { x: canvas.width / 2, y: canvas.height - 100, size: 40 },
-            score: 0,
-            movingLeft: false,
-            movingRight: false,
-            currentSprite: 'stand'
+    // Change y to be calculated based on canvas height minus a buffer
+    player: { x: canvas.width / 2, y: canvas.height - 150, size: 40 }, 
+    score: 0, movingLeft: false, movingRight: false, currentSprite: 'stand'
         };
 
         let obstacles = [];
@@ -132,6 +142,17 @@
         // Start Game
         setInterval(spawnObstacle, 1000);
         draw();
+
+        function resizeCanvas() {
+    const canvas = document.getElementById('gameCanvas');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight; // Grabs the visible area only
+}
+
+// Run on load and whenever the orientation changes
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
 
     </script>
 </body>
