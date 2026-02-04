@@ -5,260 +5,261 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Maximum Reality: The Bureaucracy Heist</title>
+    <title>The Bureaucracy Heist v2.5</title>
     <style>
         :root { --neon: #00f3ff; --danger: #ff0055; --matrix: #00ff41; --gold: #ffcf00; }
         body { margin: 0; padding: 0; background: #000; overflow: hidden; height: 100dvh; font-family: 'Courier New', monospace; color: white; }
+        
+        /* The Wrapper handles the Heartbreak Tilt without breaking the layout */
+        #stage { width: 100vw; height: 100dvh; transition: transform 0.3s ease-out; position: relative; overflow: hidden; }
         canvas { display: block; width: 100vw; height: 100dvh; touch-action: none; }
 
+        /* UI Elements */
         #ui, .overlay, #game-controls { position: absolute; width: 100%; box-sizing: border-box; z-index: 10; pointer-events: none; }
-        #ui { top: 45px; left: 0; display: flex; justify-content: space-between; padding: 0 20px; }
-        .stat { color: var(--neon); font-weight: bold; font-size: 18px; text-shadow: 0 0 5px #000; }
+        #ui { top: 50px; left: 0; display: flex; justify-content: space-between; padding: 0 25px; }
+        .stat { color: var(--neon); font-weight: bold; font-size: 18px; text-shadow: 0 0 8px #000; }
         
-        #azul-timer-container {
-            position: absolute; top: 85px; left: 50%; transform: translateX(-50%);
-            width: 180px; height: 6px; background: rgba(255,255,255,0.1);
-            border-radius: 3px; visibility: hidden;
+        #azul-timer {
+            position: absolute; top: 90px; left: 50%; transform: translateX(-50%);
+            width: 150px; height: 4px; background: rgba(255,255,255,0.1); visibility: hidden;
         }
-        #azul-timer-fill { height: 100%; width: 100%; background: var(--matrix); box-shadow: 0 0 10px var(--matrix); transition: width 0.1s linear; }
+        #azul-fill { height: 100%; width: 100%; background: var(--matrix); transition: width 0.1s linear; }
 
-        #game-controls { bottom: 30px; left: 20px; right: 20px; display: flex; justify-content: space-between; pointer-events: auto; }
-        .btn-group { display: flex; gap: 10px; }
-        .ctrl-btn { background: rgba(0,0,0,0.8); border: 1px solid var(--neon); color: var(--neon); padding: 12px; border-radius: 8px; font-size: 20px; }
+        #game-controls { bottom: 40px; left: 20px; right: 20px; display: flex; justify-content: space-between; pointer-events: auto; }
+        .ctrl-btn { background: rgba(0,0,0,0.8); border: 1px solid var(--neon); color: var(--neon); padding: 15px; border-radius: 10px; font-size: 22px; }
 
         .overlay { 
-            top: 0; left: 0; height: 100%; background: rgba(0,0,0,0.95); 
+            top: 0; left: 0; height: 100%; background: rgba(0,0,0,0.92); 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 25px; pointer-events: auto; z-index: 100;
+            text-align: center; padding: 30px; pointer-events: auto; z-index: 100;
         }
-        .start-btn { background: var(--neon); color: #000; border: none; padding: 18px 45px; font-weight: bold; font-size: 22px; border-radius: 5px; cursor: pointer; text-transform: uppercase; }
-        h1 { color: var(--neon); margin-bottom: 5px; font-size: 26px; letter-spacing: 2px; }
-        .story { color: #ccc; max-width: 320px; line-height: 1.5; font-size: 14px; margin: 15px 0; }
-        .home-link { color: var(--neon); text-decoration: none; font-size: 13px; margin-top: 25px; opacity: 0.7; border-bottom: 1px solid var(--neon); padding-bottom: 2px; }
+        .start-btn { background: var(--neon); color: #000; border: none; padding: 20px 50px; font-weight: bold; font-size: 20px; border-radius: 5px; cursor: pointer; }
+        h1 { color: var(--neon); margin: 0; font-size: 24px; text-transform: uppercase; }
+        .story { color: #aaa; max-width: 280px; line-height: 1.6; font-size: 14px; margin: 20px 0; }
+        #flash { position: absolute; top:0; left:0; width:100%; height:100%; background: var(--danger); opacity:0; pointer-events:none; z-index:90; }
     </style>
 </head>
 <body>
 
+<div id="stage">
+    <div id="flash"></div>
+    
     <div id="ui">
         <div class="stat">SCORE: <span id="score">0</span></div>
         <div class="stat">BEST: <span id="high-score">0</span></div>
     </div>
 
-    <div id="azul-timer-container">
-        <div id="azul-timer-fill"></div>
-    </div>
+    <div id="azul-timer"><div id="azul-fill"></div></div>
 
     <div id="game-controls">
         <button class="ctrl-btn" onclick="window.location.href='https://maximumreality.xyz'">🏠</button>
-        <div class="btn-group">
-            <button class="ctrl-btn" onclick="togglePause()" id="pause-btn">⏸️</button>
-            <button class="ctrl-btn" onclick="location.reload()">🔄</button>
-        </div>
+        <button class="ctrl-btn" onclick="location.reload()">🔄</button>
     </div>
 
     <div id="overlay" class="overlay">
         <h1>THE HEIST</h1>
         <p class="story">
             Lqliâa 2026. <br>
-            The Woodlawn signal is green. <br><br>
-            Reach for <b>Stars ⭐</b> and <b>Forms 📧</b>. <br> Dodge the <b>Spam 💊</b>. <br>
-            Catch <b>Azul</b> to hack the flow.
+            The system is heavy. <br> Reach for the <b>Stars ⭐</b>. <br>
+            Azul hacks the tilt. 🐈‍⬛
         </p>
         <button class="start-btn" onclick="startGame()">INITIATE</button>
-        <a href="https://maximumreality.xyz" class="home-link">RETURN TO HQ</a>
     </div>
 
     <canvas id="gameCanvas"></canvas>
+</div>
 
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const scoreElement = document.getElementById('score');
-        const highScoreElement = document.getElementById('high-score');
-        const azulBar = document.getElementById('azul-timer-fill');
-        const azulContainer = document.getElementById('azul-timer-container');
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const stage = document.getElementById('stage');
+    const flash = document.getElementById('flash');
+    
+    // --- Assets ---
+    const bg = new Image(); bg.src = 'cyberpunk_city_bg.JPG';
+    const sprites = {};
+    ['stand', 'stand_west', 'stand_east', 'reach', 'azul'].forEach(n => {
+        sprites[n] = new Image();
+        sprites[n].src = (n === 'azul') ? 'helper-azul.png' : `lori_${n}.png`;
+    });
 
-        // Assets
-        const bg = new Image(); bg.src = 'cyberpunk_city_bg.JPG';
-        const sprites = {};
-        ['stand', 'stand_west', 'stand_east', 'reach', 'azul'].forEach(name => {
-            sprites[name] = new Image();
-            sprites[name].src = (name === 'azul') ? 'helper-azul.png' : `lori_${name}.png`;
+    const sounds = {
+        ssa_form: new Audio('youve-got-mail.mp3'),
+        khobz: new Audio('crunch.mp3'),
+        azul_meow: new Audio('azul-hacker-meow.mp3'),
+        spam: new Audio('error.mp3'),
+        michelin_star: new Audio('chime.mp3')
+    };
+
+    // --- State ---
+    let gameState = {
+        mode: 'menu',
+        player: { x: 0, y: 0, dir: null },
+        score: 0,
+        highScore: localStorage.getItem('maxReality_highScore') || 0,
+        difficulty: 1,
+        powerUp: false,
+        powerUpTimer: 0,
+        currentSprite: 'stand'
+    };
+
+    let obstacles = [], particles = [], startTime = 0;
+    document.getElementById('high-score').innerText = gameState.highScore;
+
+    // --- Audio Overlap Fix ---
+    function play(key) {
+        if (!sounds[key]) return;
+        const s = sounds[key].cloneNode();
+        s.volume = 0.5;
+        s.play().catch(()=>{});
+    }
+
+    // --- Particles ---
+    class Particle {
+        constructor(x, y, color) {
+            this.x = x; this.y = y;
+            this.size = Math.random() * 4;
+            this.vx = (Math.random() - 0.5) * 10;
+            this.vy = (Math.random() - 0.5) * 10;
+            this.color = color;
+            this.a = 1;
+        }
+        update() { this.x += this.vx; this.y += this.vy; this.a -= 0.04; }
+        draw() {
+            ctx.globalAlpha = this.a;
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y, this.size, this.size);
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        gameState.player.x = canvas.width / 2;
+        gameState.player.y = canvas.height - 180;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function startGame() {
+        document.getElementById('overlay').style.display = 'none';
+        gameState.mode = 'playing';
+        startTime = Date.now();
+        // Unlock Safari Audio
+        Object.values(sounds).forEach(s => { s.play().then(()=>s.pause()).catch(()=>{})});
+        setInterval(spawn, 900);
+        requestAnimationFrame(loop);
+    }
+
+    function spawn() {
+        if (gameState.mode !== 'playing') return;
+        const items = [
+            { l: "🥖", t: "khobz", v: 10, c: "#ffcf00" },
+            { l: "📧", t: "ssa_form", v: 50, c: "#00f3ff" },
+            { l: "⭐", t: "michelin_star", v: 100, c: "#fff" },
+            { l: "💔", t: "spam", v: -40, c: "#ff0055" }, // Heartbreak
+            { l: "💊", t: "spam", v: -30, c: "#ff0055" },
+            { l: "👻", t: "ghost", v: 0, c: "#888" }
+        ];
+        let item = (Math.random() < 0.07) ? { l: "azul", t: "azul", v: 0, c: "#00ff41" } : items[Math.floor(Math.random() * items.length)];
+        obstacles.push({
+            x: Math.random() * (canvas.width - 60) + 30,
+            y: -50,
+            speed: (3 + Math.random() * 3) * (gameState.powerUp ? 0.7 : gameState.difficulty),
+            ...item
+        });
+    }
+
+    function update() {
+        gameState.difficulty = 1 + ((Date.now() - startTime) / 60000);
+
+        if (gameState.powerUp) {
+            gameState.powerUpTimer--;
+            document.getElementById('azul-fill').style.width = (gameState.powerUpTimer/400)*100 + "%";
+            if (gameState.powerUpTimer <= 0) {
+                gameState.powerUp = false;
+                document.getElementById('azul-timer').style.visibility = 'hidden';
+                stage.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        let isReaching = false;
+
+        obstacles.forEach((ob, i) => {
+            if (gameState.powerUp && ob.v > 0) {
+                ob.x += (gameState.player.x - ob.x) * 0.15;
+                ob.y += (gameState.player.y - ob.y) * 0.15;
+            } else { ob.y += ob.speed; }
+
+            let dist = Math.hypot(gameState.player.x - ob.x, (gameState.player.y - 50) - ob.y);
+            
+            if (dist < 160 && ob.v > 0) isReaching = true;
+
+            if (dist < 75) {
+                if (ob.t === 'azul') {
+                    gameState.powerUp = true;
+                    gameState.powerUpTimer = 400;
+                    document.getElementById('azul-timer').style.visibility = 'visible';
+                    stage.style.transform = 'rotate(0deg) scale(1)';
+                    play('azul_meow');
+                } else {
+                    gameState.score += ob.v;
+                    play(ob.t);
+                    if (ob.l === '💔') {
+                        flash.style.opacity = 0.5; setTimeout(()=>flash.style.opacity=0, 150);
+                        stage.style.transform = `rotate(${(Math.random()-0.5)*15}deg) scale(1.05)`;
+                    }
+                }
+                for(let j=0; j<12; j++) particles.push(new Particle(ob.x, ob.y, ob.c));
+                obstacles.splice(i, 1);
+                document.getElementById('score').innerText = gameState.score;
+            }
         });
 
-        const sounds = {
-            ssa_form: new Audio('youve-got-mail.mp3'),
-            khobz: new Audio('crunch.mp3'),
-            azul_meow: new Audio('azul-hacker-meow.mp3'),
-            spam: new Audio('error.mp3'),
-            michelin_star: new Audio('chime.mp3')
-        };
+        // Sprite Selection
+        if (isReaching) gameState.currentSprite = 'reach';
+        else if (gameState.player.dir === 'left') gameState.currentSprite = 'stand_west';
+        else if (gameState.player.dir === 'right') gameState.currentSprite = 'stand_east';
+        else gameState.currentSprite = 'stand';
 
-        class Particle {
-            constructor(x, y, color) {
-                this.x = x; this.y = y;
-                this.size = Math.random() * 3 + 1;
-                this.speedX = (Math.random() - 0.5) * 10;
-                this.speedY = (Math.random() - 0.5) * 10;
-                this.color = color;
-                this.alpha = 1;
+        particles.forEach((p, i) => { p.update(); if (p.a <= 0) particles.splice(i, 1); });
+        obstacles = obstacles.filter(ob => ob.y < canvas.height + 100);
+    }
+
+    function loop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (bg.complete) {
+            ctx.filter = gameState.powerUp ? 'sepia(1) brightness(0.5)' : 'grayscale(1) brightness(0.3)';
+            ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+            ctx.filter = 'none';
+        }
+
+        if (gameState.mode === 'playing') update();
+
+        particles.forEach(p => p.draw());
+
+        const loriImg = sprites[gameState.currentSprite] || sprites['stand'];
+        if (loriImg.complete) ctx.drawImage(loriImg, gameState.player.x - 50, gameState.player.y - 75, 100, 150);
+
+        obstacles.forEach(ob => {
+            if (ob.t === 'azul') {
+                if (sprites.azul.complete) ctx.drawImage(sprites.azul, ob.x - 30, ob.y - 30, 60, 60);
+            } else {
+                ctx.font = "40px serif";
+                ctx.fillText(ob.l, ob.x - 20, ob.y);
             }
-            update() { this.x += this.speedX; this.y += this.speedY; this.alpha -= 0.03; }
-            draw() {
-                ctx.globalAlpha = this.alpha;
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x, this.y, this.size, this.size);
-                ctx.globalAlpha = 1;
-            }
-        }
+        });
+        requestAnimationFrame(loop);
+    }
 
-        let gameState = {
-            mode: 'menu',
-            player: { x: 0, y: 0 },
-            score: 0,
-            highScore: localStorage.getItem('maxReality_highScore') || 0,
-            difficulty: 1,
-            powerUp: false,
-            powerUpTimer: 0,
-            currentSprite: 'stand',
-            isMuted: false, isPaused: false
-        };
-
-        let obstacles = [], particles = [], startTime = 0;
-        highScoreElement.innerText = gameState.highScore;
-
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            gameState.player.x = canvas.width / 2;
-            gameState.player.y = canvas.height - 160;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        function startGame() {
-            document.getElementById('overlay').style.display = 'none';
-            gameState.mode = 'playing';
-            startTime = Date.now();
-            Object.values(sounds).forEach(s => { s.play().then(()=>s.pause()).catch(()=>{})});
-            setInterval(spawn, 1000);
-            requestAnimationFrame(loop);
-        }
-
-        function spawn() {
-            if (gameState.mode !== 'playing' || gameState.isPaused) return;
-            const items = [
-                { l: "🥖", t: "khobz", v: 10, c: "#ffcf00" },
-                { l: "📧", t: "ssa_form", v: 50, c: "#00f3ff" },
-                { l: "⭐", t: "michelin_star", v: 100, c: "#ffffff" },
-                { l: "💊", t: "spam", v: -50, c: "#ff0055" },
-                { l: "👻", t: "ghost", v: 0, c: "#888888" }
-            ];
-            let item = (Math.random() < 0.08) ? { l: "azul", t: "azul", v: 0, c: "#00ff41" } : items[Math.floor(Math.random() * items.length)];
-            obstacles.push({
-                x: Math.random() * (canvas.width - 60) + 30,
-                y: -50,
-                speed: (3 + Math.random() * 2) * (gameState.powerUp ? 0.6 : gameState.difficulty),
-                ...item
-            });
-        }
-
-        function update() {
-            gameState.difficulty = 1 + ((Date.now() - startTime) / 60000);
-
-            if (gameState.powerUp) {
-                gameState.powerUpTimer--;
-                azulBar.style.width = (gameState.powerUpTimer / 400) * 100 + "%";
-                if (gameState.powerUpTimer <= 0) {
-                    gameState.powerUp = false;
-                    azulContainer.style.visibility = 'hidden';
-                }
-            }
-
-            let reaching = false;
-
-            obstacles.forEach((ob, i) => {
-                if (gameState.powerUp && ob.v > 0) {
-                    ob.x += (gameState.player.x - ob.x) * 0.12;
-                    ob.y += (gameState.player.y - ob.y) * 0.12;
-                } else { ob.y += ob.speed; }
-
-                let dist = Math.hypot(gameState.player.x - ob.x, (gameState.player.y - 40) - ob.y);
-                
-                // Visual Reach Trigger (Item is close)
-                if (dist < 150 && ob.v > 0) reaching = true;
-
-                // Collision
-                if (dist < 70) {
-                    if (ob.t === 'azul') {
-                        gameState.powerUp = true;
-                        gameState.powerUpTimer = 400;
-                        azulContainer.style.visibility = 'visible';
-                        if (!gameState.isMuted) sounds.azul_meow.play();
-                    } else {
-                        gameState.score += ob.v;
-                        if (!gameState.isMuted && sounds[ob.t]) {
-                            sounds[ob.t].currentTime = 0;
-                            sounds[ob.t].play();
-                        }
-                    }
-                    for(let j=0; j<15; j++) particles.push(new Particle(ob.x, ob.y, ob.c));
-                    obstacles.splice(i, 1);
-                    scoreElement.innerText = gameState.score;
-                    if (gameState.score > gameState.highScore) {
-                        gameState.highScore = gameState.score;
-                        highScoreElement.innerText = gameState.highScore;
-                        localStorage.setItem('maxReality_highScore', gameState.highScore);
-                    }
-                }
-            });
-
-            // Sprite Logic
-            if (reaching) gameState.currentSprite = 'reach';
-            else if (gameState.player.movingDirection === 'left') gameState.currentSprite = 'stand_west';
-            else if (gameState.player.movingDirection === 'right') gameState.currentSprite = 'stand_east';
-            else gameState.currentSprite = 'stand';
-
-            particles.forEach((p, i) => { p.update(); if (p.alpha <= 0) particles.splice(i, 1); });
-            obstacles = obstacles.filter(ob => ob.y < canvas.height + 50);
-        }
-
-        function loop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (bg.complete) {
-                ctx.filter = gameState.powerUp ? 'sepia(1) hue-rotate(90deg) brightness(0.4)' : 'grayscale(1) brightness(0.3)';
-                ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
-                ctx.filter = 'none';
-            }
-
-            if (gameState.mode === 'playing' && !gameState.isPaused) update();
-
-            particles.forEach(p => p.draw());
-
-            const loriImg = sprites[gameState.currentSprite] || sprites['stand'];
-            if (loriImg.complete) ctx.drawImage(loriImg, gameState.player.x - 50, gameState.player.y - 75, 100, 150);
-
-            obstacles.forEach(ob => {
-                if (ob.t === 'azul') {
-                    if (sprites.azul.complete) ctx.drawImage(sprites.azul, ob.x - 30, ob.y - 30, 60, 60);
-                } else {
-                    ctx.font = "45px serif";
-                    ctx.fillText(ob.l, ob.x - 22, ob.y);
-                }
-            });
-            requestAnimationFrame(loop);
-        }
-
-        canvas.addEventListener('touchmove', (e) => {
-            const newX = e.touches[0].clientX;
-            gameState.player.movingDirection = (newX < gameState.player.x) ? 'left' : 'right';
-            gameState.player.x = newX;
-            e.preventDefault();
-        }, { passive: false });
-
-        canvas.addEventListener('touchend', () => { gameState.player.movingDirection = null; });
-
-        function togglePause() { gameState.isPaused = !gameState.isPaused; document.getElementById('pause-btn').innerText = gameState.isPaused ? '▶️' : '⏸️';}
-    </script>
+    canvas.addEventListener('touchmove', (e) => {
+        const touchX = e.touches[0].clientX;
+        gameState.player.dir = (touchX < gameState.player.x) ? 'left' : 'right';
+        gameState.player.x = touchX;
+        e.preventDefault();
+    }, { passive: false });
+    canvas.addEventListener('touchend', () => { gameState.player.dir = null; });
+</script>
 </body>
 </html>
