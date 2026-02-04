@@ -2,21 +2,19 @@
 <html lang="en">
 <head>
     <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Maximum Reality: The Bureaucracy Heist</title>
     <style>
-        body { margin: 0; padding: 0; background-color: #0a0a0a; overflow: hidden; height: 100vh; font-family: 'Courier New', monospace; }
+        body { margin: 0; padding: 0; background-color: #0a0a0a; overflow: hidden; height: 100dvh; font-family: 'Courier New', monospace; }
         canvas {
-    width: 100vw;
-    height: 100dvh; /* Dynamic height adjusts when Safari bars expand/collapse */
-    display: block;
-    touch-action: none; /* Prevents the screen from bouncing while you play */
-}
-
-        #ui { position: absolute; top: 10px; left: 10px; color: #00f3ff; pointer-events: none; text-shadow: 0 0 5px #00f3ff; }
+            width: 100vw;
+            height: 100dvh;
+            display: block;
+            touch-action: none;
+        }
+        #ui { position: absolute; top: 10px; left: 10px; color: #00f3ff; pointer-events: none; text-shadow: 0 0 5px #00f3ff; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -29,34 +27,38 @@
         const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
 
-        // 1. Setup & Sprites
-        function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    // Re-anchor Lori to the bottom of the new visible area
-    gameState.player.y = canvas.height - 150; 
-}
-
-        window.addEventListener('resize', resize);
-        resize();
+        // 1. Assets & State
+        const bg = new Image();
+        bg.src = 'cyberpunk_city_bg.JPG'; 
 
         const sprites = {};
         const frameNames = ['arms_up', 'stand_west', 'idle', 'stand_east', 'reach', 'stand'];
         frameNames.forEach(name => {
             sprites[name] = new Image();
-            sprites[name].src = `lori_${name}.png`; // Lowercase for GitHub/Firebase
+            sprites[name].src = `lori_${name}.png`;
         });
 
-        // 2. Game State
         let gameState = {
-    // Change y to be calculated based on canvas height minus a buffer
-    player: { x: canvas.width / 2, y: canvas.height - 150, size: 40 }, 
-    score: 0, movingLeft: false, movingRight: false, currentSprite: 'stand'
+            player: { x: window.innerWidth / 2, y: window.innerHeight - 150 }, 
+            score: 0,
+            movingLeft: false,
+            movingRight: false,
+            currentSprite: 'stand'
         };
 
         let obstacles = [];
 
-        // 3. Spawning Logic
+        // 2. Responsive Setup
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            // Anchors Lori 150px from the bottom of the CURRENT visible area
+            gameState.player.y = canvas.height - 150; 
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // 3. Spawning & Movement Logic
         function spawnObstacle() {
             const types = [
                 { label: "🥖", type: "khobz", value: 10 },
@@ -75,26 +77,24 @@
             });
         }
 
-        // 4. Update & Interaction
         canvas.addEventListener('touchmove', (e) => {
             const touch = e.touches[0];
             const newX = touch.clientX;
             
-            if (newX < gameState.player.x - 5) gameState.movingLeft = true;
-            else if (newX > gameState.player.x + 5) gameState.movingRight = true;
-            else { gameState.movingLeft = false; gameState.movingRight = false; }
-            
+            gameState.movingLeft = newX < gameState.player.x - 5;
+            gameState.movingRight = newX > gameState.player.x + 5;
             gameState.player.x = newX;
+            
             e.preventDefault();
         }, { passive: false });
 
+        // 4. Update Engine
         function update() {
             let isReaching = false;
 
             obstacles.forEach((ob, index) => {
                 ob.y += ob.speed;
 
-                // Collision Detection
                 let dx = gameState.player.x - ob.x;
                 let dy = gameState.player.y - ob.y;
                 let dist = Math.sqrt(dx * dx + dy * dy);
@@ -105,17 +105,15 @@
                     obstacles.splice(index, 1);
                 }
 
-                // Proximity "Reach" Check
+                // If a "good" item is close, trigger the reach sprite
                 if (dist < 120 && ob.value > 0) isReaching = true;
             });
 
-            // Sprite Selector
             if (isReaching) gameState.currentSprite = 'reach';
             else if (gameState.movingLeft) gameState.currentSprite = 'stand_west';
             else if (gameState.movingRight) gameState.currentSprite = 'stand_east';
             else gameState.currentSprite = 'stand';
 
-            // Clean up off-screen items
             obstacles = obstacles.filter(ob => ob.y < canvas.height);
         }
 
@@ -123,13 +121,21 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Lori
+            // Layer 1: Desaturated Background
+            if (bg.complete) {
+                ctx.filter = 'grayscale(100%) brightness(35%) contrast(110%)';
+                ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+                ctx.filter = 'none'; // Reset for characters
+            }
+
+            // Layer 2: Cyber-Lori
             const img = sprites[gameState.currentSprite];
-            if (img.complete) {
+            if (img && img.complete) {
+                // Adjusting draw to keep her centered on the touch point
                 ctx.drawImage(img, gameState.player.x - 50, gameState.player.y - 75, 100, 150);
             }
 
-            // Draw Obstacles
+            // Layer 3: Colored Items
             ctx.font = "40px serif";
             obstacles.forEach(ob => {
                 ctx.fillText(ob.label, ob.x, ob.y);
@@ -139,21 +145,8 @@
             requestAnimationFrame(draw);
         }
 
-        // Start Game
         setInterval(spawnObstacle, 1000);
         draw();
-
-        function resizeCanvas() {
-    const canvas = document.getElementById('gameCanvas');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight; // Grabs the visible area only
-}
-
-// Run on load and whenever the orientation changes
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-
-
     </script>
 </body>
 </html>
