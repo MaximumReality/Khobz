@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mochkil's Khobz Heist</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0a0a; /* Cyberpunk Deep Black */
+            overflow: hidden; /* Stops scrolling while playing */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        canvas {
+            border: 2px solid #00f3ff; /* Neon Blue Border */
+            box-shadow: 0 0 15px #00f3ff;
+            background-color: #1a1a1a;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Resize canvas to fit iPhone screen
+        function resize() {
+            canvas.width = window.innerWidth * 0.95;
+            canvas.height = window.innerHeight * 0.8;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Game State Object
+        let gameState = {
+            player: { x: canvas.width / 2, y: canvas.height - 50, size: 30 },
+            score: 0,
+            active: true
+        };
+
+        // Basic Draw Function
+        function draw() {
+            // 1. Clear Canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 2. Draw "Mochkil" (as a Placeholder Circle for now)
+            ctx.fillStyle = "#ffffff"; // White like his tuxedo markings
+            ctx.beginPath();
+            ctx.arc(gameState.player.x, gameState.player.y, gameState.player.size, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 3. UI Text
+            ctx.fillStyle = "#00f3ff";
+            ctx.font = "20px Courier New";
+            ctx.fillText(`LENTIL SCORE: ${gameState.score}`, 20, 30);
+
+            requestAnimationFrame(draw);
+        }
+
+        // Touch Interaction (Drag Mochkil)
+        canvas.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            gameState.player.x = touch.clientX - rect.left;
+            // Keep him on screen
+            if (gameState.player.x < 0) gameState.player.x = 0;
+            if (gameState.player.x > canvas.width) gameState.player.x = canvas.width;
+            
+            e.preventDefault(); // Prevents iPhone "swipe to go back"
+        }, { passive: false });
+
+        draw();
+    </script>
+</body>
+</html>
