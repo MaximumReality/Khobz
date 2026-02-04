@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Maximum Reality: The Bureaucracy Heist</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #0a0a0a; overflow: hidden; height: 100vh; font-family: 'Courier New', monospace; }
+        canvas { display: block; border-bottom: 2px solid #00f3ff; background-color: #111; touch-action: none; }
+        #ui { position: absolute; top: 10px; left: 10px; color: #00f3ff; pointer-events: none; text-shadow: 0 0 5px #00f3ff; }
+    </style>
+</head>
+<body>
+
+    <div id="ui">SCORE: <span id="score">0</span></div>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+
+        // 1. Setup & Sprites
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const sprites = {};
+        const frameNames = ['arms_up', 'stand_west', 'idle', 'stand_east', 'reach', 'stand'];
+        frameNames.forEach(name => {
+            sprites[name] = new Image();
+            sprites[name].src = `lori_${name}.png`; // Lowercase for GitHub/Firebase
+        });
+
+        // 2. Game State
+        let gameState = {
+            player: { x: canvas.width / 2, y: canvas.height - 100, size: 40 },
+            score: 0,
+            movingLeft: false,
+            movingRight: false,
+            currentSprite: 'stand'
+        };
+
+        let obstacles = [];
+
+        // 3. Spawning Logic
+        function spawnObstacle() {
+            const types = [
+                { label: "🥖", type: "khobz", value: 10 },
+                { label: "💔", type: "spam", value: -20 },
+                { label: "📧", type: "ssa_form", value: 50 },
+                { label: "⭐", type: "michelin_star", value: 100 },
+                { label: "👻", type: "macy_ghost", value: 0 },
+                { label: "💊", type: "spam_capsule", value: -50 }
+            ];
+            const choice = types[Math.floor(Math.random() * types.length)];
+            obstacles.push({
+                x: Math.random() * (canvas.width - 40),
+                y: -50,
+                speed: 3 + Math.random() * 4,
+                ...choice
+            });
+        }
+
+        // 4. Update & Interaction
+        canvas.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            const newX = touch.clientX;
+            
+            if (newX < gameState.player.x - 5) gameState.movingLeft = true;
+            else if (newX > gameState.player.x + 5) gameState.movingRight = true;
+            else { gameState.movingLeft = false; gameState.movingRight = false; }
+            
+            gameState.player.x = newX;
+            e.preventDefault();
+        }, { passive: false });
+
+        function update() {
+            let isReaching = false;
+
+            obstacles.forEach((ob, index) => {
+                ob.y += ob.speed;
+
+                // Collision Detection
+                let dx = gameState.player.x - ob.x;
+                let dy = gameState.player.y - ob.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 60) {
+                    gameState.score += ob.value;
+                    scoreElement.innerText = gameState.score;
+                    obstacles.splice(index, 1);
+                }
+
+                // Proximity "Reach" Check
+                if (dist < 120 && ob.value > 0) isReaching = true;
+            });
+
+            // Sprite Selector
+            if (isReaching) gameState.currentSprite = 'reach';
+            else if (gameState.movingLeft) gameState.currentSprite = 'stand_west';
+            else if (gameState.movingRight) gameState.currentSprite = 'stand_east';
+            else gameState.currentSprite = 'stand';
+
+            // Clean up off-screen items
+            obstacles = obstacles.filter(ob => ob.y < canvas.height);
+        }
+
+        // 5. Draw Loop
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Lori
+            const img = sprites[gameState.currentSprite];
+            if (img.complete) {
+                ctx.drawImage(img, gameState.player.x - 50, gameState.player.y - 75, 100, 150);
+            }
+
+            // Draw Obstacles
+            ctx.font = "40px serif";
+            obstacles.forEach(ob => {
+                ctx.fillText(ob.label, ob.x, ob.y);
+            });
+
+            update();
+            requestAnimationFrame(draw);
+        }
+
+        // Start Game
+        setInterval(spawnObstacle, 1000);
+        draw();
+
+    </script>
+</body>
+</html>
