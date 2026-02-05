@@ -209,13 +209,14 @@
         if (gameState.mode !== 'playing' || gameState.isPaused) return;
         
         const items = [
-            { l: "🥖", t: "khobz", v: 5, c: "#ffcf00" },
-            { l: "📧", t: "ssa_form", v: 50, c: "#00f3ff" },
-            { l: "⭐", t: "michelin_star", v: 100, c: "#fff" },
-            { l: "💔", t: "spam", v: -40, c: "#ff0055" },
-            { l: "💻", t: "laptop", v: 200, c: "#00f3ff" },
-            { l: "👻", t: "ghost", v: 0, c: "#888" }
-        ];
+    { l: "🥖", t: "khobz", v: 5, c: "#ffcf00" },
+    { l: "📧", t: "ssa_form", v: 50, c: "#00f3ff" },
+    { l: "⭐", t: "michelin_star", v: 100, c: "#fff" },
+    { l: "💔", t: "spam", v: -40, c: "#ff0055" },
+    { l: "💻", t: "laptop", v: 200, c: "#00ff41" },
+    { l: "👻", t: "ghost", v: 0, c: "#888" },
+    { l: "💊", t: "spam_capsule", v: -7, c: "#ffffff" } // <-- your dodgable capsule
+];
 
         let item = (Math.random() < 0.07) ? { l: "azul", t: "azul", v: 0, c: "#00ff41" } : items[Math.floor(Math.random() * items.length)];
         
