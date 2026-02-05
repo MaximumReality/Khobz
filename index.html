@@ -119,15 +119,16 @@
     const stage = document.getElementById('stage');
     const flash = document.getElementById('flash');
     
-    // --- Assets ---
-    const bg = new Image(); bg.src = 'cyberpunk_city_bg.JPG';
-    const sprites = {};
-    ['stand', 'stand_west', 'stand_east', 'reach', 'azul'].forEach(n => {
+       // --- Assets ---
+    const bg = new Image(); 
+    bg.src = 'cyberpunk_city_bg.JPG';
+    
+    const sprites = {}; // This line was missing!
+    ['stand', 'stand_west', 'stand_east', 'reach', 'azul', 'arms_up'].forEach(n => {
         sprites[n] = new Image();
         sprites[n].src = (n === 'azul') ? 'helper-azul.png' : `lori_${n}.png`;
     });
 
-        // Near your other Image() declarations
     const bgVictory = new Image();
     bgVictory.src = 'max_real_bonus-bg.JPG';
 
@@ -305,7 +306,8 @@
         }
         if (gameState.mode === 'playing' || gameState.mode === 'victory') update();
         particles.forEach(p => p.draw());
-        const loriImg = sprites[gameState.currentSprite] || sprites['stand'];
+        const loriImg = (gameState.mode === 'victory') ? sprites['arms_up'] : (sprites[gameState.currentSprite] || sprites['stand']);
+
         if (loriImg.complete) ctx.drawImage(loriImg, gameState.player.x - 50, gameState.player.y - 75, 100, 150);
         obstacles.forEach(ob => {
             if (ob.t === 'azul') {
