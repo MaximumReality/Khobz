@@ -73,20 +73,25 @@
     <div id="game-controls">
         <button class="ctrl-btn" onclick="window.location.href='https://maximumreality.xyz'">🏠</button>
         <button class="ctrl-btn" onclick="location.reload()">🔄</button>
+        <button id="pause-btn" class="ctrl-btn" onclick="togglePause()">⏸️</button>
     </div>
 
     <div id="overlay" class="overlay">
-        <h1>THE HEIST</h1>
-        <p class="story">
-            Lqliâa 2026. <br>
-            The system is heavy. <br> Reach for the <b>Stars ⭐</b>. <br>
-            Azul hacks the tilt. 🐈‍⬛
-        </p>
-        <button class="start-btn" onclick="startGame()">INITIATE</button>
-    </div>
-
+    <h1>THE HEIST</h1>
+    <p class="story">
+        Lqliâa 2026. <br>
+        The system is heavy. <br> Reach for the <b>Stars ⭐</b>. <br>
+        Azul hacks the tilt. 🐈‍⬛
+    </p>
+    <button class="start-btn" onclick="startGame()">INITIATE</button>
+</div>
     <canvas id="gameCanvas"></canvas>
 </div>
+    <div id="pause-overlay" class="overlay" style="display:none; background: rgba(0,0,0,0.75);">
+    <h1>PAUSED</h1>
+    <p class="story">Tap ⏸️ to resume</p>
+</div>
+    
 
 <script>
     const canvas = document.getElementById('gameCanvas');
@@ -112,16 +117,16 @@
 
     // --- State ---
     let gameState = {
-        mode: 'menu',
-        player: { x: 0, y: 0, dir: null },
-        score: 0,
-        highScore: localStorage.getItem('maxReality_highScore') || 0,
-        difficulty: 1,
-        powerUp: false,
-        powerUpTimer: 0,
-        currentSprite: 'stand'
-    };
-
+    mode: 'menu',
+    isPaused: false,
+    player: { x: 0, y: 0, dir: null },
+    score: 0,
+    highScore: localStorage.getItem('maxReality_highScore') || 0,
+    difficulty: 1,
+    powerUp: false,
+    powerUpTimer: 0,
+    currentSprite: 'stand'
+};
     let obstacles = [], particles = [], startTime = 0;
     document.getElementById('high-score').innerText = gameState.highScore;
 
@@ -172,36 +177,37 @@
     }
 
     function spawn() {
-        if (gameState.mode !== 'playing') return;
-        const items = [
-            { l: "🥖", t: "khobz", v: 10, c: "#ffcf00" },
-            { l: "📧", t: "ssa_form", v: 50, c: "#00f3ff" },
-            { l: "⭐", t: "michelin_star", v: 100, c: "#fff" },
-            { l: "💔", t: "spam", v: -40, c: "#ff0055" }, // Heartbreak
-            { l: "💊", t: "spam", v: -30, c: "#ff0055" },
-            { l: "👻", t: "ghost", v: 0, c: "#888" }
-        ];
-        let item = (Math.random() < 0.07) ? { l: "azul", t: "azul", v: 0, c: "#00ff41" } : items[Math.floor(Math.random() * items.length)];
-        obstacles.push({
-            x: Math.random() * (canvas.width - 60) + 30,
-            y: -50,
-            speed: (3 + Math.random() * 3) * (gameState.powerUp ? 0.7 : gameState.difficulty),
-            ...item
-        });
-    }
+    if (gameState.mode !== 'playing' || gameState.isPaused) return; // ❌ stop if paused
+    const items = [
+        { l: "🥖", t: "khobz", v: 10, c: "#ffcf00" },
+        { l: "📧", t: "ssa_form", v: 50, c: "#00f3ff" },
+        { l: "⭐", t: "michelin_star", v: 100, c: "#fff" },
+        { l: "💔", t: "spam", v: -40, c: "#ff0055" },
+        { l: "💊", t: "spam", v: -30, c: "#ff0055" },
+        { l: "👻", t: "ghost", v: 0, c: "#888" }
+    ];
+    let item = (Math.random() < 0.07) ? { l: "azul", t: "azul", v: 0, c: "#00ff41" } : items[Math.floor(Math.random() * items.length)];
+    obstacles.push({
+        x: Math.random() * (canvas.width - 60) + 30,
+        y: -50,
+        speed: (3 + Math.random() * 3) * (gameState.powerUp ? 0.7 : gameState.difficulty),
+        ...item
+    });
+}
 
     function update() {
+        if (gameState.isPaused) return;
         gameState.difficulty = 1 + ((Date.now() - startTime) / 60000);
 
-        if (gameState.powerUp) {
-            gameState.powerUpTimer--;
-            document.getElementById('azul-fill').style.width = (gameState.powerUpTimer/400)*100 + "%";
-            if (gameState.powerUpTimer <= 0) {
-                gameState.powerUp = false;
-                document.getElementById('azul-timer').style.visibility = 'hidden';
-                stage.style.transform = 'rotate(0deg)';
-            }
-        }
+        if (gameState.powerUp && !gameState.isPaused) {
+    gameState.powerUpTimer--;
+    document.getElementById('azul-fill').style.width = (gameState.powerUpTimer/400)*100 + "%";
+    if (gameState.powerUpTimer <= 0) {
+        gameState.powerUp = false;
+        document.getElementById('azul-timer').style.visibility = 'hidden';
+        stage.style.transform = 'rotate(0deg)';
+    }
+}
 
         let isReaching = false;
 
@@ -279,6 +285,13 @@
         e.preventDefault();
     }, { passive: false });
     canvas.addEventListener('touchend', () => { gameState.player.dir = null; });
+
+    function togglePause() {
+    gameState.isPaused = !gameState.isPaused;
+    document.getElementById('pause-btn').innerText =
+        gameState.isPaused ? '▶️' : '⏸️';
+    document.getElementById('pause-overlay').style.display = gameState.isPaused ? 'flex' : 'none';
+}
 </script>
 </body>
 </html>
