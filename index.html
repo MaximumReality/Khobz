@@ -291,10 +291,18 @@ function reachParadise() {
         bg.src = bgVictory.src;
         flash.style.opacity = 0;
         stage.style.transform = "rotate(0deg) scale(1)";
-        document.getElementById('overlay').innerHTML = '<h1>PARADISE</h1><p class="story">You hacked the system. The fresh soup is waiting.</p><button class="start-btn" onclick="location.reload()">REPLAY</button>';
+        
+        // Updated HTML to include Rick Chillin'
+        document.getElementById('overlay').innerHTML = `
+            <img src="rick.png" style="position:absolute; bottom:10px; left:10px; width:80px; opacity:0.8; transform: scaleX(-1);">
+            <h1>PARADISE</h1>
+            <p class="story">You hacked the system. The fresh soup is waiting.<br>The Legend says: "You know the rules, and so do I."</p>
+            <button class="start-btn" onclick="location.reload()">REPLAY</button>
+        `;
         document.getElementById('overlay').style.display = 'flex';
     }, 500);
 }
+
 
 function togglePause() {
     if (gameState.mode !== 'playing') return;
