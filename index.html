@@ -119,22 +119,20 @@ h1 { color: var(--neon); margin: 0; font-size: 24px; text-transform: uppercase; 
     <p class="story">Tap ⏸️ to resume</p>
 </div>
 
-<script>
-const canvas = document.getElementById('gameCanvas');
+<script>const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const stage = document.getElementById('stage');
 const flash = document.getElementById('flash');
+const pauseBtn = document.getElementById('pause-btn');
 
 // --- Assets ---
 const bg = new Image(); 
 bg.src = 'cyberpunk_city_bg.JPG';
-
 const sprites = {};
 ['stand', 'stand_west', 'stand_east', 'reach', 'azul', 'arms_up'].forEach(n => {
     sprites[n] = new Image();
     sprites[n].src = (n === 'azul') ? 'helper-azul.png' : `lori_${n}.png`;
 });
-
 const bgVictory = new Image();
 bgVictory.src = 'max_real_bonus-bg.JPG';
 
@@ -201,12 +199,12 @@ resize();
 
 function startGame() {
     document.getElementById('overlay').style.display = 'none';
+    pauseBtn.style.visibility = 'visible';
     gameState.mode = 'playing';
+    gameState.score = 0;
+    gameState.isPaused = false;
     startTime = Date.now();
-    // Unlock audio for iOS
-    Object.values(sounds).forEach(s => {
-        s.play().then(() => s.pause()).catch(() => {});
-    });
+    Object.values(sounds).forEach(s => { s.play().then(() => s.pause()).catch(() => {}); });
     setInterval(spawn, 900);
     requestAnimationFrame(loop);
 }
@@ -242,6 +240,8 @@ function update() {
     if (gameState.powerUp) {
         gameState.powerUpTimer--;
         document.getElementById('azul-fill').style.width = (gameState.powerUpTimer/400)*100 + "%";
+        // AZUL FIXES THE TILT
+        stage.style.transform = "rotate(0deg) scale(1)";
         if (gameState.powerUpTimer <= 0) {
             gameState.powerUp = false;
             document.getElementById('azul-timer').style.visibility = 'hidden';
@@ -249,7 +249,6 @@ function update() {
     }
 
     let isReaching = false;
-
     obstacles.forEach((ob, i) => {
         if (gameState.powerUp && ob.v > 0) {
             ob.x += (gameState.player.x - ob.x) * 0.15;
@@ -268,15 +267,12 @@ function update() {
                 gameState.powerUpTimer = 400;
                 document.getElementById('azul-timer').style.visibility = 'visible';
                 play('azul_meow');
-            } else if (ob.t === 'laptop') {
-                gameState.score += ob.v * 2;
-                play('michelin_star');
             } else if (ob.t === 'victory_key') {
                 reachParadise();
             } else {
                 gameState.score += ob.v;
                 play(ob.t);
-                if (ob.l === '💔') {
+                if (ob.l === '💔' && !gameState.powerUp) {
                     flash.style.opacity = 0.5; setTimeout(()=>flash.style.opacity=0, 150);
                     stage.style.transform = `rotate(${(Math.random()-0.5)*15}deg) scale(1.05)`;
                 }
@@ -298,16 +294,16 @@ function update() {
 
 function loop() {
     if (gameState.isPaused) return; 
-    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // SEPIA FILTER RESTORED
     if (bg.complete) {
-        ctx.filter = gameState.powerUp ? 'sepia(1) brightness(0.5)' : 'grayscale(1) brightness(0.3)';
+        ctx.filter = gameState.powerUp ? 'sepia(1) brightness(0.8)' : 'grayscale(1) brightness(0.3)';
         ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
         ctx.filter = 'none';
     }
     
     update();
-    
     particles.forEach(p => p.draw());
     const loriImg = (gameState.mode === 'victory') ? sprites['arms_up'] : (sprites[gameState.currentSprite] || sprites['stand']);
     if (loriImg.complete) ctx.drawImage(loriImg, gameState.player.x - 50, gameState.player.y - 75, 100, 150);
@@ -324,49 +320,41 @@ function loop() {
 }
 
 function togglePause() {
-    if (gameState.mode === 'menu') return;
+    if (gameState.mode !== 'playing') return;
     gameState.isPaused = !gameState.isPaused;
-    
-    const btn = document.getElementById('pause-btn');
-    const pauseOverlay = document.getElementById('pause-overlay');
-    
-    btn.innerText = gameState.isPaused ? '▶️' : '⏸️';
-    pauseOverlay.style.display = gameState.isPaused ? 'flex' : 'none';
-    
-    if (!gameState.isPaused) {
-        requestAnimationFrame(loop);
-    }
+    document.getElementById('pause-btn').innerText = gameState.isPaused ? '▶️' : '⏸️';
+    document.getElementById('pause-overlay').style.display = gameState.isPaused ? 'flex' : 'none';
+    if (!gameState.isPaused) requestAnimationFrame(loop);
 }
 
-// Global Touch Handlers - Fixed Brackets
 canvas.addEventListener('touchstart', (e) => {
-    if (gameState.isPaused) {
-        togglePause(); 
-    }
+    if (gameState.isPaused) togglePause(); 
 }, { passive: false });
 
 canvas.addEventListener('touchmove', (e) => {
-    if (gameState.isPaused) return;
-    const touchX = e.touches[0].clientX;
-    gameState.player.dir = (touchX < gameState.player.x) ? 'left' : 'right';
-    gameState.player.x = touchX;
+    if (gameState.isPaused || gameState.mode === 'menu') return;
+    gameState.player.x = e.touches[0].clientX;
+    gameState.player.dir = (gameState.player.x < canvas.width/2) ? 'left' : 'right';
     e.preventDefault();
 }, { passive: false });
 
-canvas.addEventListener('touchend', () => { 
-    gameState.player.dir = null; 
-});
+canvas.addEventListener('touchend', () => { gameState.player.dir = null; });
 
 function reachParadise() {
     gameState.mode = 'victory';
+    pauseBtn.style.visibility = 'hidden';
     flash.style.background = "#fff";
     flash.style.opacity = 1;
     setTimeout(() => {
         bg.src = bgVictory.src;
         flash.style.opacity = 0;
         stage.style.transform = "rotate(0deg) scale(1)";
+        document.getElementById('overlay').innerHTML = '<h1>PARADISE</h1><p class="story">You hacked the system. The fresh soup is waiting.</p><button class="start-btn" onclick="location.reload()">REPLAY</button>';
+        document.getElementById('overlay').style.display = 'flex';
     }, 500);
 }
+// Hide Pause initially
+pauseBtn.style.visibility = 'hidden';
 </script>
 
 
