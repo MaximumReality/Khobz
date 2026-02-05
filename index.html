@@ -55,6 +55,7 @@ h1 { color: var(--neon); margin: 0; font-size: 24px; text-transform: uppercase; 
 #flash { position: absolute; top:0; left:0; width:100%; height:100%; background: var(--danger); opacity:0; pointer-events:none; z-index:90; }
 #pause-btn { width: 60px; text-align: center; }
 #game-controls {
+    position: absolute; /* Keeps it locked to the stage */
     bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
@@ -63,7 +64,17 @@ h1 { color: var(--neon); margin: 0; font-size: 24px; text-transform: uppercase; 
     width: auto;
     gap: 10px;
     pointer-events: auto;
+    z-index: 999; /* This is the "Magic" that puts it on top of the Pause screen */
 }
+
+.overlay { 
+    top: 0; left: 0; height: 100%; background: rgba(0,0,0,0.92); 
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 30px; 
+    pointer-events: auto; 
+    z-index: 100; /* The Pause screen stays at 100, while buttons are at 999 */
+}
+
 .ctrl-btn {
     flex-shrink: 0;
     min-width: 60px;
@@ -286,7 +297,7 @@ function update() {
 }
 
 function loop() {
-    if (gameState.isPaused) return; // Stop drawing if paused
+    if (gameState.isPaused) return; 
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (bg.complete) {
@@ -313,20 +324,24 @@ function loop() {
 }
 
 function togglePause() {
+    if (gameState.mode === 'menu') return;
     gameState.isPaused = !gameState.isPaused;
+    
     const btn = document.getElementById('pause-btn');
+    const pauseOverlay = document.getElementById('pause-overlay');
+    
     btn.innerText = gameState.isPaused ? '▶️' : '⏸️';
-    document.getElementById('pause-overlay').style.display = gameState.isPaused ? 'flex' : 'none';
+    pauseOverlay.style.display = gameState.isPaused ? 'flex' : 'none';
     
     if (!gameState.isPaused) {
-        requestAnimationFrame(loop); // Restart the loop
+        requestAnimationFrame(loop);
     }
 }
 
-// Global Touch Handlers
+// Global Touch Handlers - Fixed Brackets
 canvas.addEventListener('touchstart', (e) => {
     if (gameState.isPaused) {
-        togglePause(); // Tap to resume
+        togglePause(); 
     }
 }, { passive: false });
 
@@ -338,7 +353,9 @@ canvas.addEventListener('touchmove', (e) => {
     e.preventDefault();
 }, { passive: false });
 
-canvas.addEventListener('touchend', () => { gameState.player.dir = null; });
+canvas.addEventListener('touchend', () => { 
+    gameState.player.dir = null; 
+});
 
 function reachParadise() {
     gameState.mode = 'victory';
