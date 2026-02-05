@@ -68,10 +68,11 @@ const pauseBtn = document.getElementById('pause-btn');
 const bg = new Image(); bg.src = 'cyberpunk_city_bg.JPG';
 const bgVictory = new Image(); bgVictory.src = 'max_real_bonus-bg.JPG';
 const sprites = {};
-['stand', 'stand_west', 'stand_east', 'reach', 'azul', 'arms_up'].forEach(n => {
+['stand', 'stand_west', 'stand_east', 'reach', 'azul', 'arms_up', 'rick'].forEach(n => {
     sprites[n] = new Image();
-    sprites[n].src = (n === 'azul') ? 'helper-azul.png' : `lori_${n}.png`;
+    sprites[n].src = (n === 'azul') ? 'helper-azul.png' : (n === 'rick' ? 'rick.png' : `lori_${n}.png`);
 });
+
 
 // --- Audio ---
 const sounds = {
@@ -154,7 +155,17 @@ function spawn() {
         { l: "👻", t: "ghost", v: 0, c: "#888" }
 
     ];
-    let item = (Math.random() < 0.07) ? { l: "azul", t: "azul", v: 0, c: "#00ff41" } : items[Math.floor(Math.random() * items.length)];
+       let item;
+    const roll = Math.random();
+
+    if (roll < 0.07) {
+        item = { l: "azul", t: "azul", v: 0, c: "#00ff41" };
+    } else if (roll < 0.075) { // 0.5% chance for the Rick-Ghost
+        item = { l: "🕺", t: "rick", v: 1000, c: "#ffcf00" }; // Big points for the Legend!
+    } else {
+        item = items[Math.floor(Math.random() * items.length)];
+    }
+
     
     // THE WIN CONDITION: Spawn Suitcase at 24800
     if (gameState.score >= 24800 && !gameState.suitcaseSpawned) {
@@ -201,16 +212,25 @@ function update() {
                 gameState.powerUpTimer = 400;
                 document.getElementById('azul-timer').style.visibility = 'visible';
                 play('azul_meow');
+            } else if (ob.t === 'rick') {
+                gameState.score += ob.v;
+                // Celebrate the Rickroll with a Gold Flash!
+                flash.style.background = "var(--gold)";
+                flash.style.opacity = 0.6; 
+                setTimeout(()=>flash.style.opacity=0, 300);
+                play('michelin_star'); 
             } else if (ob.t === 'victory_key') {
                 reachParadise();
             } else {
                 gameState.score += ob.v;
                 play(ob.t);
                 if (ob.l === '💔' && !gameState.powerUp) {
+                    flash.style.background = "var(--danger)";
                     flash.style.opacity = 0.5; setTimeout(()=>flash.style.opacity=0, 150);
                     stage.style.transform = `rotate(${(Math.random()-0.5)*15}deg) scale(1.05)`;
                 }
             }
+            // Update High Score Bureaucracy
             if (gameState.score > gameState.highScore) {
                 gameState.highScore = gameState.score;
                 localStorage.setItem('maxReality_highScore', gameState.highScore);
@@ -241,14 +261,24 @@ function loop() {
     }
     update();
     particles.forEach(p => p.draw());
+
     const loriImg = (gameState.mode === 'victory') ? sprites['arms_up'] : (sprites[gameState.currentSprite] || sprites['stand']);
     if (loriImg.complete) ctx.drawImage(loriImg, gameState.player.x - 50, gameState.player.y - 75, 100, 150);
+
+    // DRAWING THE DROPPING ITEMS
     obstacles.forEach(ob => {
-        if (ob.t === 'azul') { if (sprites.azul.complete) ctx.drawImage(sprites.azul, ob.x - 30, ob.y - 30, 60, 60); }
-        else { ctx.font = "40px serif"; ctx.fillText(ob.l, ob.x - 20, ob.y); }
+        if (ob.t === 'azul' && sprites.azul.complete) {
+            ctx.drawImage(sprites.azul, ob.x - 30, ob.y - 30, 60, 60);
+        } else if (ob.t === 'rick' && sprites.rick.complete) {
+            ctx.drawImage(sprites.rick, ob.x - 35, ob.y - 45, 70, 90); // Slightly bigger Rick for visibility
+        } else {
+            ctx.font = "40px serif";
+            ctx.fillText(ob.l, ob.x - 20, ob.y);
+        }
     });
     requestAnimationFrame(loop);
 }
+
 
 function reachParadise() {
     gameState.mode = 'victory';
