@@ -292,11 +292,14 @@ function reachParadise() {
     flash.style.opacity = 1;
 
     setTimeout(() => {
-        // Fix: Ensure the path is exactly as it appears in your GitHub repo
-        // Also adding an inline style to the stage to force the new background
+        // --- ADD THE REDIRECT TRIGGER HERE ---
+        // This will send them to the certificate page after 2 seconds
+        // so they can see the "PARADISE" screen first.
+        setTimeout(() => {
+            window.location.href = 'https://maximumreality.github.io/winning.html';
+        }, 2000); 
+
         bg.src = 'max_real_bonus-bg.JPG'; 
-        
-        // Safety backup: Set it via CSS just in case the canvas draw misses it
         canvas.style.backgroundImage = "url('max_real_bonus-bg.JPG')";
         canvas.style.backgroundSize = "cover";
         
@@ -310,12 +313,16 @@ function reachParadise() {
                 You hacked the system. The fresh soup is waiting.<br>
                 The Legend says: "You know the rules, and so do I."
             </p>
-            <button class="start-btn" onclick="location.reload()">REPLAY</button>
+            <div style="display:flex; gap:10px;">
+                <button class="start-btn" onclick="location.reload()">REPLAY</button>
+                <button class="start-btn" style="background:var(--gold)" onclick="window.location.href='https://maximumreality.github.io/winning.html'">GET CERTIFICATE</button>
+            </div>
         `;
         document.getElementById('overlay').style.display = 'flex';
-        document.getElementById('overlay').style.background = "rgba(0,0,0,0.3)"; // Make it clearer to see the sunset
+        document.getElementById('overlay').style.background = "rgba(0,0,0,0.3)";
     }, 500);
 }
+
 
 
 function togglePause() {
